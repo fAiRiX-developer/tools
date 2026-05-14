@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TOOLS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --rounded-universal: 2rem;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --accent-green: #10b981;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #050505;
+            color: #ffffff;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .mesh-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: 
+                radial-gradient(at 0% 0%, rgba(76, 29, 149, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.08) 0px, transparent 50%);
+            filter: blur(100px);
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--rounded-universal);
+            transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+            position: relative;
+        }
+
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .glass-card.selected {
+            border-color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.04);
+        }
+
+        .filter-btn {
+            position: relative;
+            transition: all 0.3s ease;
+            color: #71717a;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .filter-btn.active { color: #ffffff; }
+        .filter-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            padding: 0 12px;
+            height: 24px;
+            border-radius: 9999px;
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--accent-green);
+        }
+
+        .info-trigger {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 24px;
+            height: 24px;
+            color: rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 900;
+            transition: all 0.3s ease;
+        }
+
+        .info-trigger:hover {
+            color: white;
+            transform: scale(1.1);
+        }
+
+        #info-panel {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 320px;
+            height: 100vh;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(30px);
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 2000;
+            transition: right 0.5s cubic-bezier(0.19, 1, 0.22, 1);
+            padding: 3rem 2rem;
+        }
+
+        #info-panel.open { right: 0; }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: black;
+            opacity: 0;
+            visibility: hidden;
+            z-index: 1999;
+            transition: all 0.3s ease;
+        }
+        .overlay.visible { opacity: 0.6; visibility: visible; }
+
+        #selection-bar {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: #10b981;
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 9999px;
+            display: flex;
+            align-items: center;
+            gap: 1.2rem;
+            z-index: 1000;
+            transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+            box-shadow: 0 15px 35px rgba(16, 185, 129, 0.3);
+        }
+
+        #selection-bar.visible { transform: translateX(-50%) translateY(0); }
+
+        .view-hidden { display: none !important; }
+        
+        input, textarea {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            border-radius: 1rem !important;
+            color: white;
+            padding: 0.8rem 1rem !important;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--accent-green) !important;
+            outline: none;
+        }
+
+        .logo-box {
+            width: 38px;
+            height: 38px;
+            background: white;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mesh-gradient"></div>
+
+    <main id="hub-view" class="max-w-6xl mx-auto px-6 py-10">
+        <header class="flex flex-col md:flex-row items-center justify-between gap-6 mb-12">
+            <div class="flex items-center gap-4">
+                <div class="logo-box">
+                    <i data-lucide="zap" class="text-black w-5 h-5 fill-current"></i>
+                </div>
+                <h1 class="text-2xl font-black tracking-tighter uppercase">TOOLS</h1>
+            </div>
+            
+            <nav class="flex gap-2 bg-white/5 p-1.5 rounded-[9999px] backdrop-blur-xl border border-white/5 items-center">
+                <div id="dynamic-filters" class="flex gap-1"></div>
+                <div class="w-px h-5 bg-white/10 mx-2"></div>
+                <div class="flex gap-1">
+                    <button id="toggle-select-mode" onclick="toggleSelectMode()" class="p-2 text-zinc-500 hover:text-white transition-colors" title="Массовый выбор">
+                        <i data-lucide="list-checks" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="goToEditor()" class="p-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-full hover:bg-emerald-500/30 transition-all">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </nav>
+        </header>
+
+        <div id="islands-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+
+        <div id="empty-state" class="hidden flex flex-col items-center justify-center py-32 text-zinc-600">
+            <i data-lucide="layout" class="w-10 h-10 mb-4 opacity-10"></i>
+            <p class="text-sm font-medium">Нет добавленных инструментов</p>
+        </div>
+    </main>
+
+    <section id="editor-view" class="max-w-3xl mx-auto px-6 py-10 view-hidden">
+        <button onclick="goToHub()" class="flex items-center gap-2 text-zinc-500 hover:text-white mb-8 transition-colors group">
+            <i data-lucide="arrow-left" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></i>
+            <span class="text-[10px] font-black uppercase tracking-widest">Назад</span>
+        </button>
+
+        <div class="glass-card p-8 md:p-10">
+            <div class="flex justify-between items-center mb-8">
+                <h2 id="editor-title" class="text-2xl font-black">Новый инструмент</h2>
+                <button id="delete-btn" class="hidden text-red-400 text-[10px] font-black uppercase tracking-widest border border-red-500/20 px-4 py-2 rounded-full hover:bg-red-500/10" onclick="deleteCurrentIsland()">Удалить</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="flex flex-col items-center gap-3">
+                    <div id="image-upload-zone" onclick="document.getElementById('file-input').click()" class="w-20 h-20 rounded-full border-2 border-dashed border-white/10 flex items-center justify-center cursor-pointer bg-white/5 overflow-hidden hover:border-emerald-500/50 transition-colors">
+                        <i data-lucide="image" id="upload-icon" class="text-zinc-600 w-6 h-6"></i>
+                        <img id="image-preview" class="hidden w-full h-full object-cover">
+                    </div>
+                    <span class="text-[9px] font-black uppercase text-zinc-500">Иконка</span>
+                    <input type="file" id="file-input" accept="image/*" class="hidden">
+                </div>
+
+                <div class="md:col-span-3 space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input id="field-name" type="text" placeholder="Название *">
+                        <input id="field-link" type="text" placeholder="Ссылка (URL) *">
+                    </div>
+                    <textarea id="field-desc" rows="3" placeholder="Краткое описание..."></textarea>
+                    <input id="field-category" type="text" placeholder="Категория (напр. Код, Дизайн)">
+                    
+                    <button id="main-action-btn" onclick="saveIsland()" class="w-full py-4 bg-emerald-500 text-white rounded-xl font-black uppercase tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20">
+                        Создать
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="selection-bar">
+        <span id="selection-count" class="text-xs font-black">Выбрано: 0</span>
+        <button onclick="deleteSelected()" class="bg-white/20 hover:bg-white/30 px-4 py-1.5 rounded-full font-bold text-[10px] uppercase">Удалить</button>
+        <button onclick="toggleSelectMode()" class="text-white/60 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+    </div>
+
+    <div class="overlay" id="overlay" onclick="closeInfo()"></div>
+    <div id="info-panel">
+        <div class="flex justify-between items-center mb-8">
+            <h3 class="text-xl font-black uppercase">О проекте</h3>
+            <button onclick="closeInfo()"><i data-lucide="x" class="w-5 h-5 text-zinc-500 hover:text-white"></i></button>
+        </div>
+        <div class="space-y-6 text-zinc-400 text-sm leading-relaxed">
+            <p>Это ваш личный <strong>AI HUB</strong> для хранения ссылок на полезные нейросети и инструменты.</p>
+            <div class="p-4 bg-white/5 rounded-2xl border border-white/5">
+                <p class="text-xs text-zinc-500 mb-2 font-bold uppercase">Хранение данных</p>
+                Все данные хранятся локально в вашем браузере (LocalStorage). Мы не передаем ваши ссылки на сервер.
+            </div>
+            <div class="pt-4 border-t border-white/5">
+                <p class="text-[10px] text-zinc-600 uppercase font-bold mb-3">Контакты & Ссылки</p>
+                <div class="flex flex-col gap-2">
+                    <a href="#" class="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-emerald-500/10 transition-colors group">
+                        <span class="font-medium text-white">Разработчик</span>
+                        <i data-lucide="external-link" class="w-4 h-4 text-zinc-600 group-hover:text-emerald-400"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="info-trigger" onclick="openInfo()">
+        <i data-lucide="chevron-up"></i>
+    </div>
+
+    <script>
+        let islands = JSON.parse(localStorage.getItem('tools_hub_v2')) || [];
+        let currentEditId = null;
+        let tempImageData = null;
+        let activeFilter = 'Все';
+        let selectMode = false;
+        let selectedIds = new Set();
+
+        function goToEditor(id = null) {
+            currentEditId = id;
+            selectedIds.clear();
+            selectMode = false;
+            updateSelectionUI();
+            
+            document.getElementById('hub-view').classList.add('view-hidden');
+            document.getElementById('editor-view').classList.remove('view-hidden');
+            
+            const actionBtn = document.getElementById('main-action-btn');
+            const delBtn = document.getElementById('delete-btn');
+            
+            if (id) {
+                const item = islands.find(i => i.id === id);
+                document.getElementById('editor-title').innerText = 'Редактирование';
+                actionBtn.innerText = 'Сохранить';
+                delBtn.classList.remove('hidden');
+                
+                document.getElementById('field-name').value = item.name;
+                document.getElementById('field-link').value = item.link;
+                document.getElementById('field-desc').value = item.desc || '';
+                document.getElementById('field-category').value = item.category === 'Разное' ? '' : item.category;
+                
+                if (item.image) {
+                    tempImageData = item.image;
+                    const prev = document.getElementById('image-preview');
+                    prev.src = item.image;
+                    prev.classList.remove('hidden');
+                    document.getElementById('upload-icon').classList.add('hidden');
+                }
+            } else {
+                document.getElementById('editor-title').innerText = 'Новый инструмент';
+                actionBtn.innerText = 'Создать';
+                delBtn.classList.add('hidden');
+                clearFields();
+            }
+            window.scrollTo(0,0);
+        }
+
+        function goToHub() {
+            activeFilter = 'Все';
+            document.getElementById('editor-view').classList.add('view-hidden');
+            document.getElementById('hub-view').classList.remove('view-hidden');
+            renderHub();
+        }
+
+        function openInfo() {
+            document.getElementById('info-panel').classList.add('open');
+            document.getElementById('overlay').classList.add('visible');
+        }
+
+        function closeInfo() {
+            document.getElementById('info-panel').classList.remove('open');
+            document.getElementById('overlay').classList.remove('visible');
+        }
+
+        async function compressImage(base64Str) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.src = base64Str;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX = 200;
+                    let w = img.width, h = img.height;
+                    if (w > h) { if(w > MAX) { h *= MAX/w; w = MAX; } }
+                    else { if(h > MAX) { w *= MAX/h; h = MAX; } }
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/webp', 0.8));
+                };
+            });
+        }
+
+        async function saveIsland() {
+            const name = document.getElementById('field-name').value.trim();
+            let link = document.getElementById('field-link').value.trim();
+            const category = document.getElementById('field-category').value.trim() || 'Разное';
+            
+            if (!name || !link) return;
+            if (!link.startsWith('http')) link = 'https://' + link;
+
+            const payload = {
+                id: currentEditId || Date.now(),
+                name, link, category,
+                desc: document.getElementById('field-desc').value,
+                image: tempImageData
+            };
+
+            const updated = currentEditId 
+                ? islands.map(i => i.id === currentEditId ? payload : i)
+                : [...islands, payload];
+
+            try {
+                localStorage.setItem('tools_hub_v2', JSON.stringify(updated));
+                islands = updated;
+                goToHub();
+            } catch (e) {
+                // Not using alert as per rules, using subtle message bar later if needed
+                console.error("Storage full");
+            }
+        }
+
+        function toggleSelectMode() {
+            selectMode = !selectMode;
+            selectedIds.clear();
+            document.getElementById('toggle-select-mode').classList.toggle('text-emerald-400', selectMode);
+            updateSelectionUI();
+            renderHub();
+        }
+
+        function handleCardClick(id, link) {
+            if (selectMode) {
+                if (selectedIds.has(id)) selectedIds.delete(id);
+                else selectedIds.add(id);
+                updateSelectionUI();
+                renderHub();
+            } else {
+                window.open(link, '_blank');
+            }
+        }
+
+        function updateSelectionUI() {
+            const bar = document.getElementById('selection-bar');
+            const count = document.getElementById('selection-count');
+            if (selectedIds.size > 0) {
+                bar.classList.add('visible');
+                count.innerText = `Выбрано: ${selectedIds.size}`;
+            } else {
+                bar.classList.remove('visible');
+            }
+        }
+
+        function deleteSelected() {
+            islands = islands.filter(i => !selectedIds.has(i.id));
+            localStorage.setItem('tools_hub_v2', JSON.stringify(islands));
+            toggleSelectMode();
+        }
+
+        function deleteCurrentIsland() {
+            islands = islands.filter(i => i.id !== currentEditId);
+            localStorage.setItem('tools_hub_v2', JSON.stringify(islands));
+            goToHub();
+        }
+
+        function renderHub() {
+            const container = document.getElementById('islands-container');
+            container.innerHTML = '';
+
+            const categories = ['Все', ...new Set(islands.map(i => i.category))];
+            const filterNav = document.getElementById('dynamic-filters');
+            filterNav.innerHTML = '';
+            
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.className = `filter-btn px-4 ${activeFilter === cat ? 'active' : ''}`;
+                btn.innerText = cat;
+                btn.onclick = (e) => { 
+                    e.stopPropagation(); 
+                    activeFilter = cat; 
+                    renderHub(); 
+                };
+                filterNav.appendChild(btn);
+            });
+
+            const filtered = activeFilter === 'Все' ? islands : islands.filter(i => i.category === activeFilter);
+            
+            if (filtered.length === 0) {
+                document.getElementById('empty-state').classList.remove('hidden');
+            } else {
+                document.getElementById('empty-state').classList.add('hidden');
+                filtered.forEach(item => {
+                    const isSel = selectedIds.has(item.id);
+                    const card = document.createElement('div');
+                    card.className = `glass-card p-6 flex flex-col group cursor-pointer ${isSel ? 'selected' : ''}`;
+                    card.onclick = () => handleCardClick(item.id, item.link);
+                    
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-5">
+                            <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+                                ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<i data-lucide="zap" class="w-4 h-4 text-emerald-400"></i>`}
+                            </div>
+                            ${selectMode ? 
+                                `<div class="w-5 h-5 rounded-full border-2 ${isSel ? 'bg-emerald-500 border-emerald-500' : 'border-white/20'} flex items-center justify-center transition-all">
+                                    ${isSel ? '<i data-lucide="check" class="w-3 h-3 text-white"></i>' : ''}
+                                </div>` :
+                                `<button onclick="event.stopPropagation(); goToEditor(${item.id})" class="p-2 text-zinc-600 hover:text-white transition-all opacity-0 group-hover:opacity-100">
+                                    <i data-lucide="settings" class="w-4 h-4"></i>
+                                </button>`
+                            }
+                        </div>
+                        <h3 class="text-lg font-black mb-1 group-hover:text-emerald-400 transition-colors">${item.name}</h3>
+                        <p class="text-zinc-500 text-xs mb-6 line-clamp-2">${item.desc || 'Открыть сервис'}</p>
+                        <div class="mt-auto flex items-center justify-between">
+                            <span class="category-badge">${item.category}</span>
+                            <i data-lucide="arrow-up-right" class="w-4 h-4 text-zinc-700 group-hover:text-white transition-colors"></i>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+            lucide.createIcons();
+        }
+
+        function clearFields() {
+            ['field-name', 'field-link', 'field-desc', 'field-category'].forEach(id => document.getElementById(id).value = '');
+            tempImageData = null;
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('upload-icon').classList.remove('hidden');
+        }
+
+        document.getElementById('file-input').onchange = async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    tempImageData = await compressImage(ev.target.result);
+                    const prev = document.getElementById('image-preview');
+                    prev.src = tempImageData;
+                    prev.classList.remove('hidden');
+                    document.getElementById('upload-icon').classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+
+        window.onload = renderHub;
+    </script>
+</body>
+</html>
